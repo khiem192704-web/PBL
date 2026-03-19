@@ -17,12 +17,13 @@ struct order{
 typedef struct order order;
 
 struct bill{
+    int codeOfBill;
     order *list;
     int numberDish;
     double total;
     struct bill *next;
 };
-typedef struct bill bill;
+typedef struct bill *bill;
 
 struct node{
     food data;
@@ -40,10 +41,10 @@ node* createNode(food x){
     return L;
 }
 
-node* insert(node* root, food x){
+node* insert_food_to_root(node* root, food x){
     if(root == NULL) return createNode(x);
-    if(x.code < root->data.code) root->left = insert(root->left, x);
-    if(x.code > root->data.code) root->right = insert(root->right, x);
+    if(x.code < root->data.code) root->left = insert_food_to_root(root->left, x);
+    if(x.code > root->data.code) root->right = insert_food_to_root(root->right, x);
     return root;
 }
 
@@ -54,42 +55,138 @@ food createDish(int code, char name[], double cost) {
     x.cost = cost;
     return x;
 }
+
+node*search_dish(node*root, int code){
+    if(root == NULL) return NULL;
+    if(root->data.code == code) return root;
+    if(root->data.code > code) return search_dish(root->left,code);
+    else return search_dish(root->right,code);
+}
+
 node* menu(){
     food menu;
     node*root = NULL;
-    menu = createDish(1, "Ga ran", 50000);
-    root = insert(root,menu);
-    menu = createDish( 2, "Lau thai", 300000);
-    root = insert(root,menu);
-    menu = createDish( 3, "Bo luc lac", 150000);
-    root = insert(root,menu);
+    menu = createDish(1, "Goi sua", 100000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 2, "Salad ca hoi", 300000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 3, "Goi bap bo", 150000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 4, "Bo Wagyu bit tet", 800000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 5, "Ca hoi nuong me", 400000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 6, "Tom hum xao bo toi", 600000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 7, "Com chien duong chau", 100000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 8, "Ga sot teriyaki", 450000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 9, "Ca ri bo", 300000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 10, "Tiramisu", 30000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 11, "Trai cay ngu vi", 100000);
+    root = insert_food_to_root(root,menu);
+    menu = createDish( 12, "Pana cotta", 20000);
+    root = insert_food_to_root(root,menu);
     return root;
 }
 
 void printMenu(node* root){
     if(root == NULL) return;
     printMenu(root->left);
-    printf("%d:%s\t%.2lf\n", root->data.code, root->data.name, root->data.cost);
+    printf("\t%d:\t%-20s\t%-10.2lf\n", root->data.code, root->data.name, root->data.cost);
     printMenu(root->right);
 }
 
-
-
-bill *createBill(){
-    bill *bill = malloc(sizeof(bill));
-    if(bill == NULL){
-        printf("Cannot create bill!");
+bill create_bill(){
+    int n = 0;
+    bill Bill = malloc(sizeof(struct bill));
+    if(Bill == NULL){
+        printf("Cannot write order into bill!");
         return NULL;
     }
-    bill->list = malloc(sizeof(order)*MAX_DISH);
-    bill->numberDish = 0;
-    bill->total = 0;
-    bill->next = NULL;
-    return bill; 
+    Bill->list = malloc(sizeof(order)*MAX_DISH);
+    if(Bill->list == NULL){
+        printf("Cannot order!"); return NULL;
+    }
+    Bill->codeOfBill = 0;
+    Bill->next = NULL;
+    Bill->numberDish = 0;
+    Bill->total = 0;
+    return Bill;
 }
 
-int add_Bill(bill b, order o){
+void add_order_to_bill(bill head, node*root, order dish ){
+	node*found = search_dish(root,dish.code);
+	if(found == NULL){
+		printf("This dish is not available on the menu!\n");
+		return;
+	}
+	int i; 
+	for(i = 0; i < head->numberDish; i++){
+        if(head->list[i].code ==  dish.code){
+            head->list[i].number += dish.number;
+            head->total += dish.number * found->data.cost;
+            return;
+        }
+    }
+    head->list[head->numberDish].code = dish.code;
+    head->list[head->numberDish].number = dish.number;
+    head->numberDish++;
+    head->total += dish.number*found->data.cost;
+}
 
+void order_dish(node*root, bill BILL, order dish){
+    int m,n;
+    int q=0;
+    while(q<MAX_DISH){
+        printf("Enter the dish code:"); scanf("%d",&m);
+        dish.code = m;
+        ++q;
+        printf("Enter quantity:"); scanf("%d",&n);
+        dish.number = n;
+        add_order_to_bill(BILL,root,dish);
+        
+    }
+}
+
+
+
+void operation(node*Menu){
+    int codeDay;
+    printf("\nEnter transaction code:"); scanf("%d", &codeDay);
+    bill BILL = create_bill();
+    order dish;
+    printf("  \t\t------------------------MENU------------------------\n");
+    printMenu(Menu);
+    while(1){
+        printf("\n\t============ORDERING SYSTEM============\t\n");
+		printf( "1. Order food.\n");
+		printf( "2. Enter the code to end the day.\n");
+		printf( "3. Secondary function.\n");
+		printf( "-------------------------------------\n");
+		printf( "Enter your choose :");
+		int lc; scanf ("%d",&lc);
+		if(lc == 1){
+			order_dish(Menu,BILL,dish);
+		}
+		else if(lc == 2){
+            int end;
+			printf("Please enter the code:"); scanf("%d",&end);
+            if(end == codeDay){
+                //ham thống kê và in file
+                printf("End of the day!");
+                break;
+            }
+            else printf("Wrong code!");
+		}
+		else if(lc == 3){
+            
+		}
+
+	}
 }
 
 int main(){
@@ -104,12 +201,7 @@ int main(){
 	printf("  \t\t|___________________________________________________________________________________________________|\n");
     node*Menu = menu();
     //printMenu(Menu);
-    while(1){
-        int codeDay;
-        printf("\nEnter transaction code:"); scanf("%d", &codeDay);
-        int n = 0 ;
-        printf("------------------------MENU------------------------\n");
-        printMenu(Menu);
-    }
+    operation(Menu);
+
     return 0;
 }
