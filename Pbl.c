@@ -132,6 +132,8 @@ void add_order_to_bill(bill head, node*root, order dish ){
             return;
         }
     }
+    int n = 0;
+    head->codeOfBill = ++n;
     head->list[head->numberDish].code = dish.code;
     head->list[head->numberDish].number = dish.number;
     head->numberDish++;
@@ -147,12 +149,21 @@ void order_dish(node*root, bill BILL, order dish){
         ++q;
         printf("Enter quantity:"); scanf("%d",&n);
         dish.number = n;
+        if(m == 0 && n == 0) break;
         add_order_to_bill(BILL,root,dish);
-        
     }
 }
 
-
+void print_BILL(bill BILL, node*root){
+    printf("-----------BILL-----------\t\n");
+    for(int i = 0; i < BILL->numberDish; i++){
+        node*found = search_dish(root, BILL->list[i].code);
+        if(found != NULL){
+            printf("%s x %d = %.2lf\n", found->data.name, BILL->list[i].number, BILL->list[i].number*found->data.cost);
+        }
+    }
+    printf("Total amount payable: %.2lf\n", BILL->total);
+}
 
 void operation(node*Menu){
     int codeDay;
@@ -169,8 +180,10 @@ void operation(node*Menu){
 		printf( "-------------------------------------\n");
 		printf( "Enter your choose :");
 		int lc; scanf ("%d",&lc);
+        printf("\n");
 		if(lc == 1){
 			order_dish(Menu,BILL,dish);
+            print_BILL(BILL,Menu);
 		}
 		else if(lc == 2){
             int end;
@@ -185,6 +198,9 @@ void operation(node*Menu){
 		else if(lc == 3){
             
 		}
+        else{
+            printf("Please enter again!");
+        }
 
 	}
 }
