@@ -101,7 +101,7 @@ void printMenu(node* root){
 }
 
 bill create_bill(){
-    int n = 0;
+    static int n = 0;
     bill Bill = malloc(sizeof(struct bill));
     if(Bill == NULL){
         printf("Cannot write order into bill!");
@@ -111,7 +111,7 @@ bill create_bill(){
     if(Bill->list == NULL){
         printf("Cannot order!"); return NULL;
     }
-    Bill->codeOfBill = 0;
+    Bill->codeOfBill = ++n;
     Bill->next = NULL;
     Bill->numberDish = 0;
     Bill->total = 0;
@@ -132,24 +132,41 @@ void add_order_to_bill(bill head, node*root, order dish ){
             return;
         }
     }
-    int n = 0;
-    head->codeOfBill = ++n;
     head->list[head->numberDish].code = dish.code;
     head->list[head->numberDish].number = dish.number;
     head->numberDish++;
     head->total += dish.number*found->data.cost;
 }
 
+void add_bill_to_list(bill*head, bill newbill){
+    if(*head == NULL){
+        *head = newbill;
+        return;
+    }
+    bill temp = *head;
+    while(temp->next != NULL){
+        temp = temp->next;
+    }
+    temp->next = newbill;
+}
+
 void order_dish(node*root, bill BILL, order dish){
     int m,n;
     int q=0;
-    while(q<MAX_DISH){
+    while(1){
         printf("Enter the dish code:"); scanf("%d",&m);
-        dish.code = m;
-        ++q;
         printf("Enter quantity:"); scanf("%d",&n);
+        if(n < 0) continue;
+        dish.code = m;        
         dish.number = n;
         if(m == 0 && n == 0) break;
+        int check = 0; 
+        for(int i = 1; i<BILL->numberDish; i++){
+            if(BILL->list[i].code == m) check = 1; 
+        }
+        if(!check && BILL->numberDish >= MAX_DISH){
+            printf("Max 5 dishes."); continue;
+        }
         add_order_to_bill(BILL,root,dish);
     }
 }
@@ -165,12 +182,26 @@ void print_BILL(bill BILL, node*root){
     printf("Total amount payable: %.2lf\n", BILL->total);
 }
 
-void operation(node*Menu){
+void file(bill BILL, node*root){
+
+}
+
+void find_bill(bill*head,int x, node*root){
+    bill temp = *head;
+    while(temp != NULL){
+        if(temp->codeOfBill == x){
+            print_BILL(temp,root);
+            return;
+        }
+        temp = temp->next;
+    }
+}
+
+void operation(node*Menu, bill*head){
     int codeDay;
     printf("\nEnter transaction code:"); scanf("%d", &codeDay);
-    bill BILL = create_bill();
     order dish;
-    printf("  \t\t------------------------MENU------------------------\n");
+    printf("  \t------------------------MENU------------------------\n");
     printMenu(Menu);
     while(1){
         printf("\n\t============ORDERING SYSTEM============\t\n");
@@ -182,8 +213,10 @@ void operation(node*Menu){
 		int lc; scanf ("%d",&lc);
         printf("\n");
 		if(lc == 1){
+            bill BILL = create_bill();
 			order_dish(Menu,BILL,dish);
             print_BILL(BILL,Menu);
+            add_bill_to_list(head,BILL);
 		}
 		else if(lc == 2){
             int end;
@@ -196,7 +229,18 @@ void operation(node*Menu){
             else printf("Wrong code!");
 		}
 		else if(lc == 3){
-            
+            printf("1.Find bill from code of bill. ");
+            printf("\n2.Add food.");
+            int choose;
+            printf("\nEnter your choose:"); scanf("%d",&choose);
+            switch(choose){
+                case 1:{
+                    printf("Input code of bill you want to find: ");
+                    int code; scanf("%d",&code);
+                    find_bill(head,code,Menu);
+                }
+                case 2:{}
+            }
 		}
         else{
             printf("Please enter again!");
@@ -216,8 +260,9 @@ int main(){
 	printf("  \t\t|                                           Nguyen Minh Hien - 25T_DT2                              |\n");
 	printf("  \t\t|___________________________________________________________________________________________________|\n");
     node*Menu = menu();
+    bill head = NULL;
     //printMenu(Menu);
-    operation(Menu);
+    operation(Menu,&head);
 
     return 0;
 }
