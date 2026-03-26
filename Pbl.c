@@ -156,7 +156,10 @@ void order_dish(node*root, bill BILL, order dish){
     while(1){
         printf("Enter the dish code:"); scanf("%d",&m);
         printf("Enter quantity:"); scanf("%d",&n);
-        if(n < 0) continue;
+        if(n < 0) {
+            printf("So luong mon an khong phu hop\n");
+            continue;
+        }
         dish.code = m;        
         dish.number = n;
         if(m == 0 && n == 0) break;
