@@ -9,28 +9,29 @@ struct food{
     char name[MAX_NAME];
     double cost;
 };
-typedef struct food food;
 
 struct order{
     int code;
     int number;
 };
-typedef struct order order;
 
 struct bill{
     int codeOfBill;
-    order *list;
+    struct order *list;
     int numberDish;
     double total;
     struct bill *next;
 };
-typedef struct bill *bill;
 
 struct node{
-    food data;
+    struct food data;
     struct node *left;
     struct node *right;
 };
+
+typedef struct bill *bill;
+typedef struct order order;
+typedef struct food food;
 typedef struct node node;
 
 void SET_COLOR(int color)
@@ -73,14 +74,6 @@ node* createNode(food x){
     return L;
 }
 
-// nhập các dữ liệu food vào hàm root
-node* insert_food_to_root(node* root, food x){
-    if(root == NULL) return createNode(x);
-    if(x.code < root->data.code) root->left = insert_food_to_root(root->left, x);
-    if(x.code > root->data.code) root->right = insert_food_to_root(root->right, x);
-    return root;
-}
-
 // tạo thông tin các món ăn
 food createDish(int code, char name[], double cost) { 
     food x;
@@ -88,6 +81,33 @@ food createDish(int code, char name[], double cost) {
     strcpy(x.name, name);
     x.cost = cost;
     return x;
+}
+
+// tạo bill để chứa các thông tin thanh toán
+bill create_bill(){
+    static int n = 0;
+    bill Bill = malloc(sizeof(struct bill));
+    if(Bill == NULL){
+        printf("Cannot write order into bill!");
+        return NULL;
+    }
+    Bill->list = malloc(sizeof(order)*MAX_DISH);
+    if(Bill->list == NULL){
+        printf("Cannot order!"); return NULL;
+    }
+    Bill->codeOfBill = ++n;
+    Bill->next = NULL;
+    Bill->numberDish = 0;
+    Bill->total = 0;
+    return Bill;
+}
+
+// nhập các dữ liệu food vào hàm root
+node* insert_food_to_root(node* root, food x){
+    if(root == NULL) return createNode(x);
+    if(x.code < root->data.code) root->left = insert_food_to_root(root->left, x);
+    if(x.code > root->data.code) root->right = insert_food_to_root(root->right, x);
+    return root;
 }
 
 // tìm kiếm món ăn trong root
@@ -137,25 +157,6 @@ void printMenu(node* root){
     printMenu(root->right);
 }
 
-// tạo bill để chứa các thông tin thanh toán
-bill create_bill(){
-    static int n = 0;
-    bill Bill = malloc(sizeof(struct bill));
-    if(Bill == NULL){
-        printf("Cannot write order into bill!");
-        return NULL;
-    }
-    Bill->list = malloc(sizeof(order)*MAX_DISH);
-    if(Bill->list == NULL){
-        printf("Cannot order!"); return NULL;
-    }
-    Bill->codeOfBill = ++n;
-    Bill->next = NULL;
-    Bill->numberDish = 0;
-    Bill->total = 0;
-    return Bill;
-}
-
 // nhập các món đã order vào bill
 void add_order_to_bill(bill head, node*root, order dish ){
 	node*found = search_dish(root,dish.code);
@@ -163,8 +164,7 @@ void add_order_to_bill(bill head, node*root, order dish ){
 		printf("This dish is not available on the menu!\n");
 		return;
 	}
-	int i; 
-	for(i = 0; i < head->numberDish; i++){
+	for(int i = 0; i < head->numberDish; i++){
         if(head->list[i].code ==  dish.code){
             head->list[i].number += dish.number;
             head->total += dish.number * found->data.cost;
@@ -230,9 +230,6 @@ void print_BILL(bill BILL, node*root){
     printf("Total amount payable: %.2lf\n", BILL->total);
 }
 
-void file(bill BILL, node*root){
-
-}
 
 // hàm tìm bill bằng code
 void find_bill(bill*head,int x, node*root){
@@ -246,6 +243,9 @@ void find_bill(bill*head,int x, node*root){
     }
 }
 
+void file(bill BILL, node*root){
+
+}
 
 // hàm hoạt động
 void operation(node*Menu, bill*head){
