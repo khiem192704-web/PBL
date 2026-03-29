@@ -201,19 +201,6 @@ void add_order_to_bill(bill head, node*root, order dish ){
     head->total += dish.number*found->data.cost;
 }
 
-// thêm bill vào danh sách 
-void add_bill_to_list(bill*head, bill newbill){
-    if(*head == NULL){
-        *head = newbill;
-        return;
-    }
-    bill temp = *head;
-    while(temp->next != NULL){
-        temp = temp->next;
-    }
-    temp->next = newbill;
-}
-
 // hàm gọi món
 void order_dish(node*root, bill BILL, order dish){
     if(root == NULL){
@@ -239,6 +226,37 @@ void order_dish(node*root, bill BILL, order dish){
         add_order_to_bill(BILL,root,dish);
     }
 }
+
+void change_quantity(int code, node*root, bill BILL, int number){
+    if(BILL == NULL){ printf("Empty bill!"); return;}
+    int found = -1;
+    for(int i =0; i<BILL->numberDish; i++){
+        if(BILL->list[i].code == code){
+            found = i;
+            break;
+        }
+    }
+    if(found == -1) return;
+    node *foundDish = search_dish(root, code);
+    if(foundDish == NULL) return;
+    BILL->total -= (double)BILL->list[found].number*foundDish->data.cost;
+    BILL->list[found].number = number;
+    BILL->total += (double)number*foundDish->data.cost;
+}
+
+// thêm bill vào danh sách 
+void add_bill_to_list(bill*head, bill newbill){
+    if(*head == NULL){
+        *head = newbill;
+        return;
+    }
+    bill temp = *head;
+    while(temp->next != NULL){
+        temp = temp->next;
+    }
+    temp->next = newbill;
+}
+
 
 // hàm in ra bill
 void print_BILL(bill BILL, node*root){
@@ -271,6 +289,26 @@ void file(bill BILL, node*root){
 
 }
 
+void customer_mode(node*Menu, bill BILL, order dish, bill*head){
+    order_dish(Menu,BILL,dish);
+    while(1){
+        printf("\n===============================\n");
+        printf("Did you want to change your quantity of dish ? (YES/NO)");
+        char choice[10];
+        xoaBoNhoDem();
+        scanf("%s",&choice);
+        if(strcmp(choice,"YES") == 0){
+            int code, number;
+            printf("Enter code of dish you want to change:"); code = nhapsonguyen();
+            printf("Enter the quantity you want to change:"); number = nhapsonguyen();
+            change_quantity(code, Menu, BILL, number);
+        }
+        else{break;}
+    }
+    print_BILL(BILL,Menu);
+    add_bill_to_list(head,BILL);
+}
+
 // hàm hoạt động
 void operation(node*Menu, bill*head){
     int codeDay = 0;
@@ -293,9 +331,10 @@ void operation(node*Menu, bill*head){
         switch(lc){
 		case 1:{
             bill BILL = create_bill();
-			order_dish(Menu,BILL,dish);
-            print_BILL(BILL,Menu);
-            add_bill_to_list(head,BILL);
+			// order_dish(Menu,BILL,dish);
+            // print_BILL(BILL,Menu);
+            // add_bill_to_list(head,BILL);
+            customer_mode(Menu, BILL, dish, head);
             break;
         }
 		case 2:{
