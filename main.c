@@ -3,20 +3,31 @@
 #include<string.h>
 #include<Windows.h>
 #define MAX_NAME 50
+#define MAX_MENU 20
 #define MAX_DISH 5
+
+int total_of_dish = 0;
+
+char menuNames[MAX_MENU][50];
+double menuPrices[MAX_MENU];
+char menuCategory[MAX_MENU][20];
+
+
 struct food{
     int code;
     char name[MAX_NAME];
     double cost;
+    char category[30];
 };
 
 struct order{
     int code;
     int number;
+    char note[MAX_NAME];
 };
 
 struct bill{
-    int codeOfBill;
+    int ID_of_Bill;
     struct order *list;
     int numberDish;
     double total;
@@ -75,11 +86,12 @@ node* createNode(food x){
 }
 
 // tạo thông tin các món ăn
-food createDish(int code, char name[], double cost) { 
+food createDish(int code, char name[], double cost, char category[]) { 
     food x;
     x.code = code;
     strcpy(x.name, name);
     x.cost = cost;
+    strcpy(x.category,category);
     return x;
 }
 
@@ -95,7 +107,7 @@ bill create_bill(){
     if(Bill->list == NULL){
         printf("Cannot order!"); return NULL;
     }
-    Bill->codeOfBill = ++n;
+    Bill->ID_of_Bill = ++n;
     Bill->next = NULL;
     Bill->numberDish = 0;
     Bill->total = 0;
@@ -118,43 +130,55 @@ node*search_dish(node*root, int code){
     else return search_dish(root->right,code);
 }
 
+node* addFood(node* root, int code, char name[], double cost, char category[]){
+    food menu = createDish(code, name, cost, category);
+    root = insert_food_to_root(root, menu);
+    if(total_of_dish < MAX_MENU){
+        strcpy(menuNames[total_of_dish], name);
+        menuPrices[total_of_dish] = cost;
+        strcpy(menuCategory[total_of_dish], category);
+        total_of_dish++;
+    }
+    return root;
+}
+
 // tạo menu
 node* menu(){
     food menu;
     node*root = NULL;
-    menu = createDish(1, "Goi sua", 100000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 2, "Salad ca hoi", 300000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 3, "Goi bap bo", 150000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 4, "Bo Wagyu bit tet", 800000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 5, "Ca hoi nuong me", 400000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 6, "Tom hum xao bo toi", 600000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 7, "Com chien duong chau", 100000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 8, "Ga sot teriyaki", 450000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 9, "Ca ri bo", 300000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 10, "Tiramisu", 30000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 11, "Trai cay ngu vi", 100000);
-    root = insert_food_to_root(root,menu);
-    menu = createDish( 12, "Pana cotta", 20000);
-    root = insert_food_to_root(root,menu);
+    root = addFood(root, 1, "Goi sua", 100000, "Khai vi");
+    root = addFood(root, 2, "Salad ca hoi", 300000, "Khai vi");
+    root = addFood(root, 3, "Goi bap bo", 150000, "Khai vi");
+
+    root = addFood(root, 4, "Bo Wagyu bit tet", 800000, "Mon chinh");
+    root = addFood(root, 5, "Ca hoi nuong me", 400000, "Mon chinh");
+    root = addFood(root, 6, "Tom hum xao bo toi", 600000, "Mon chinh");
+    root = addFood(root, 7, "Com chien duong chau", 100000, "Mon chinh");
+    root = addFood(root, 8, "Ga sot teriyaki", 450000, "Mon chinh");
+    root = addFood(root, 9, "Ca ri bo", 300000, "Mon chinh");
+
+    root = addFood(root, 10, "Tiramisu", 30000, "Trang mieng");
+    root = addFood(root, 11, "Trai cay ngu vi", 100000, "Trang mieng");
+    root = addFood(root, 12, "Pana cotta", 20000, "Trang mieng");
     return root;
 }
 
 // in ra menu
-void printMenu(node* root){
-    if(root == NULL) return;
-    printMenu(root->left);
-    printf("\t%d:\t%-20s\t%-10.2lf\n", root->data.code, root->data.name, root->data.cost);
-    printMenu(root->right);
+void printMenu(){
+    char group[3][20] = {"Khai vi", "Mon chinh", "Trang mieng"};
+    printf("\n\t===============MENU===============\n");
+    for(int i = 0; i < 3; i++){
+        printf("\n[%s]\n",group[i]);
+        printf("------------------------------");
+        int found = 0;
+        for(int j = 0; j < total_of_dish; j++){
+            if(strcmp(group[i],menuCategory[j]) == 0){
+                printf("\n%d: %s  %.2lf\n", j+1, menuNames[j], menuPrices[j]);
+                found = 1;
+            }
+        }
+        if(!found) printf("This category is currently unavailable.");
+    }
 }
 
 // nhập các món đã order vào bill
@@ -219,7 +243,7 @@ void order_dish(node*root, bill BILL, order dish){
 // hàm in ra bill
 void print_BILL(bill BILL, node*root){
     printf("===============BILL===============\t\n");
-    printf("Code of BILL: %d\n",BILL->codeOfBill);
+    printf("Code of BILL: %d\n",BILL->ID_of_Bill);
     for(int i = 0; i < BILL->numberDish; i++){
         node*found = search_dish(root, BILL->list[i].code);
         if(found != NULL){
@@ -235,7 +259,7 @@ void print_BILL(bill BILL, node*root){
 void find_bill(bill*head,int x, node*root){
     bill temp = *head;
     while(temp != NULL){
-        if(temp->codeOfBill == x){
+        if(temp->ID_of_Bill == x){
             print_BILL(temp,root);
             return;
         }
@@ -256,11 +280,10 @@ void operation(node*Menu, bill*head){
     printf("\nEnter transaction code:");
     codeDay = nhapsonguyen();
     while(1){
-        printf(" \n ------------------------MENU------------------------\n");
-        printMenu(Menu);
+        printMenu();
         printf("\n\t============ORDERING SYSTEM============\t\n");
 		printf( "1. Order food.\n");
-		printf( "2. Enter the code to end the day.\n");
+		printf( "2. Management mode.\n");
 		printf( "3. Secondary function.\n");
 		printf( "-------------------------------------\n");
 		printf( "Enter your choose :");
@@ -319,7 +342,6 @@ int main(){
 	printf("  \t\t|___________________________________________________________________________________________________|\n");
     node*Menu = menu();
     bill head = NULL;
-    //printMenu(Menu);
     operation(Menu,&head);
 
     return 0;
