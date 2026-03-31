@@ -154,6 +154,7 @@ node*search_dish(node*root, int code)
     else return search_dish(root->right,code);
 }
 
+// hàm thêm món vào menu
 node* addFood(node* root, int code, char name[], double cost, char category[])
 {
     food menu = createDish(code, name, cost, category);
@@ -189,8 +190,47 @@ node* menu()
     return root;
 }
 
+node*minNode(node* node){
+    while( node && node->left) node = node->left;
+    return node;
+}
 
+// hàm xóa món ra khỏi menu
+node* remove_food(node* root, int code){
+    if(root == NULL) return root;
+    if(code < root->data.code) root->left = remove_food(root->left,code);
+    else if(code > root->data.code) root->right = remove_food(root->right, code);
+    else{
+        for(int i = 0; i < total_of_dish; i++){
+            if(strcmp(menuNames[i], root->data.name) == 0){
+                for( int j = i; j < total_of_dish; j++){
+                    strcpy(menuNames[j],menuNames[j+1]);
+                    menuPrices[j] = menuPrices[j+1];
+                    strcpy(menuCategory[j], menuCategory[j+1]);
+                }
+                total_of_dish--;
+                break;
+            }
+        }
+        if(!root->left){
+            node* temp = root->right;
+            free(root);
+            return temp;
+        }
+        if(!root->right){
+            node*temp = root->left;
+            free(root);
+            return temp;
+        }
+        node* temp = minNode(root->right);
+        root->data = temp->data;
+        root->right = remove_food(root->right, temp->data.code);
+    }
+    return root;
+    
+}
 
+// thêm món ăn vào menu
 void add_food_menu(node**root)
 {
     if(total_of_dish >= MAX_MENU){
@@ -331,7 +371,6 @@ void add_bill_to_list(bill*head, bill newbill)
     temp->next = newbill;
 }
 
-
 // hàm in ra bill
 void print_BILL(bill BILL, node*root)
 {
@@ -347,11 +386,13 @@ void print_BILL(bill BILL, node*root)
     printf("Total amount payable: %.2lf\n", BILL->total);
 }
 
-
 // hàm tìm bill bằng code
 void find_bill(bill*head,int x, node*root)
 {
     bill temp = *head;
+    if(temp == NULL){
+        printf("The bill list is empty!"); return;
+    }
     while(temp != NULL){
         if(temp->ID_of_Bill == x){
             print_BILL(temp,root);
@@ -359,12 +400,15 @@ void find_bill(bill*head,int x, node*root)
         }
         temp = temp->next;
     }
+    if(temp == NULL) printf("The bill is not found!");
 }
+
 
 void file(bill BILL, node*root){
 
 }
 
+// chế độ khách hàng
 void customer_mode(node*Menu, bill BILL, order dish, bill*head)
 {
     order_dish(Menu,BILL,dish);
@@ -386,8 +430,7 @@ void customer_mode(node*Menu, bill BILL, order dish, bill*head)
     add_bill_to_list(head,BILL);
 }
 
-
-
+// chế độ quản lí
 void management_mode(node**Menu, bill*head)
 {
     printf("1. Menu management.\n");
@@ -404,7 +447,7 @@ void management_mode(node**Menu, bill*head)
             switch(select){
                 case 1:{
                     printf("1. Add food\n");
-                    printf("2. remove food\n");
+                    printf("2. Remove food\n");
                     printf("Enter your choose:");
                     int choice; choice = nhapsonguyen();
                     switch(choice){
@@ -412,26 +455,40 @@ void management_mode(node**Menu, bill*head)
 						add_food_menu(Menu);
 						break;
                             }
-                        case 2: break;
+                        case 2:{
+                        printf("\nEnter dish code to remove: ");
+                        int dish_code = nhapsonguyen();
+                        if(search_dish(*Menu, dish_code) == NULL) printf("\nDish code have not found!");
+                        else{
+                            *Menu = remove_food(*Menu, dish_code);
+                            printf("\nRemove successfully!");
+                        }
+                        break;
                         }
                     }
+                    break;
                 }
-                case 2:{
-			        printf("1.Find bill from code of bill. ");
-                    printf("\nEnter your choose:");
-                    int choose;
-                    choose = nhapsonguyen();
-                    switch(choose){
-                        case 1:{
-                            printf("Input code of bill you want to find: ");
-                            int code; code = nhapsonguyen();
-                            find_bill(head,code,*Menu);
-                        }
-                        case 2:{}
-            }
+                case 2: break;
+		    }
             break;
-		        }
 		}
+        case 2:{
+            printf("1.Find bill from code of bill. ");
+            printf("\nEnter your choose:");
+            int choose;
+            choose = nhapsonguyen();
+            switch(choose){
+                case 1:{
+                    printf("Input code of bill you want to find: ");
+                    int code; code = nhapsonguyen();
+                    find_bill(head,code,*Menu);
+                    break;
+                }
+                case 2:{}
+                }
+            }
+        case 3: break;
+        default: break;
     }
 }
 
