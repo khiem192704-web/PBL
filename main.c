@@ -75,8 +75,28 @@ int nhapsonguyen()
     return n;
 }
 
+node* createNode(food x);
+food createDish(int code, char name[], double cost, char category[]);
+bill create_bill();
+node* insert_food_to_root(node* root, food x);
+node*search_dish(node*root, int code);
+node* addFood(node* root, int code, char name[], double cost, char category[]);
+node* menu();
+void add_food_menu(node**root);
+void printMenu();
+void add_order_to_bill(bill head, node*root, order dish );
+void order_dish(node*root, bill BILL, order dish);
+void change_quantity(int code, node*root, bill BILL, int number);
+void add_bill_to_list(bill*head, bill newbill);
+void print_BILL(bill BILL, node*root);
+void find_bill(bill*head,int x, node*root);
+void customer_mode(node*Menu, bill BILL, order dish, bill*head);
+void management_mode(node**Menu, bill*head);
+
+
 // tạo root kiểu dữ liệu food
-node* createNode(food x){
+node* createNode(food x)
+{
     node* L = malloc(sizeof(node));
     if(L == NULL) return NULL;
     L->data = x;
@@ -86,7 +106,8 @@ node* createNode(food x){
 }
 
 // tạo thông tin các món ăn
-food createDish(int code, char name[], double cost, char category[]) { 
+food createDish(int code, char name[], double cost, char category[]) 
+{ 
     food x;
     x.code = code;
     strcpy(x.name, name);
@@ -96,7 +117,8 @@ food createDish(int code, char name[], double cost, char category[]) {
 }
 
 // tạo bill để chứa các thông tin thanh toán
-bill create_bill(){
+bill create_bill()
+{
     static int n = 0;
     bill Bill = malloc(sizeof(struct bill));
     if(Bill == NULL){
@@ -115,7 +137,8 @@ bill create_bill(){
 }
 
 // nhập các dữ liệu food vào hàm root
-node* insert_food_to_root(node* root, food x){
+node* insert_food_to_root(node* root, food x)
+{
     if(root == NULL) return createNode(x);
     if(x.code < root->data.code) root->left = insert_food_to_root(root->left, x);
     if(x.code > root->data.code) root->right = insert_food_to_root(root->right, x);
@@ -123,14 +146,16 @@ node* insert_food_to_root(node* root, food x){
 }
 
 // tìm kiếm món ăn trong root
-node*search_dish(node*root, int code){
+node*search_dish(node*root, int code)
+{
     if(root == NULL) return NULL;
     if(root->data.code == code) return root;
     if(root->data.code > code) return search_dish(root->left,code);
     else return search_dish(root->right,code);
 }
 
-node* addFood(node* root, int code, char name[], double cost, char category[]){
+node* addFood(node* root, int code, char name[], double cost, char category[])
+{
     food menu = createDish(code, name, cost, category);
     root = insert_food_to_root(root, menu);
     if(total_of_dish < MAX_MENU){
@@ -143,7 +168,8 @@ node* addFood(node* root, int code, char name[], double cost, char category[]){
 }
 
 // tạo menu
-node* menu(){
+node* menu()
+{
     food menu;
     node*root = NULL;
     root = addFood(root, 1, "Goi sua", 100000, "Khai vi");
@@ -163,8 +189,50 @@ node* menu(){
     return root;
 }
 
+
+
+void add_food_menu(node**root)
+{
+    if(total_of_dish >= MAX_MENU){
+        printf("Menu is full!\n");
+        return;
+    }
+    int code;
+    char name[MAX_NAME];
+    double cost;
+    char category[30];
+    printf("Enter dish code: "); code = nhapsonguyen();
+    if(search_dish(*root, code) != NULL){
+        printf("Code %d already exists!\n", code); return;
+    }
+    printf("Enter dish name: ");
+    xoaBoNhoDem();
+    scanf("%[^\n]", name);
+    printf("Enter cost: ");
+    while(scanf("%lf", &cost) != 1 || cost < 0){
+        printf("Enter again:");
+        xoaBoNhoDem();
+    }
+    printf("Select category:\n");
+    printf("1. Khai vi\n");
+    printf("2. Mon chinh\n");
+    printf("3. Trang mieng\n");
+    printf("Your choice: ");
+    int choice;
+    choice = nhapsonguyen();
+    switch(choice){
+        case 1: strcpy(category, "Khai vi"); break;
+        case 2: strcpy(category, "Mon chinh"); break;
+        case 3: strcpy(category, "Trang mieng"); break;
+        default: strcpy(category, "Khac");
+    }
+
+    *root = addFood(*root, code, name, cost,category);
+}
+
 // in ra menu
-void printMenu(){
+void printMenu()
+{
     char group[3][20] = {"Khai vi", "Mon chinh", "Trang mieng"};
     printf("\n\t===============MENU===============\n");
     for(int i = 0; i < 3; i++){
@@ -182,7 +250,9 @@ void printMenu(){
 }
 
 // nhập các món đã order vào bill
-void add_order_to_bill(bill head, node*root, order dish ){
+void add_order_to_bill(bill head, node*root, order dish )
+{
+	if (head->numberDish >= MAX_DISH) return;
 	node*found = search_dish(root,dish.code);
 	if(found == NULL){
 		printf("This dish is not available on the menu!\n");
@@ -202,7 +272,8 @@ void add_order_to_bill(bill head, node*root, order dish ){
 }
 
 // hàm gọi món
-void order_dish(node*root, bill BILL, order dish){
+void order_dish(node*root, bill BILL, order dish)
+{
     if(root == NULL){
         printf("Empty menu!"); return;
     }
@@ -217,7 +288,7 @@ void order_dish(node*root, bill BILL, order dish){
         dish.number = n;
         if(m == 0 && n == 0) break;
         int check = 0; 
-        for(int i = 1; i<BILL->numberDish; i++){
+        for(int i = 0; i<BILL->numberDish; i++){
             if(BILL->list[i].code == m) check = 1; 
         }
         if(!check && BILL->numberDish == MAX_DISH){
@@ -227,7 +298,9 @@ void order_dish(node*root, bill BILL, order dish){
     }
 }
 
-void change_quantity(int code, node*root, bill BILL, int number){
+//hàm thay đổi số lượng món trong bill
+void change_quantity(int code, node*root, bill BILL, int number)
+{
     if(BILL == NULL){ printf("Empty bill!"); return;}
     int found = -1;
     for(int i =0; i<BILL->numberDish; i++){
@@ -245,7 +318,8 @@ void change_quantity(int code, node*root, bill BILL, int number){
 }
 
 // thêm bill vào danh sách 
-void add_bill_to_list(bill*head, bill newbill){
+void add_bill_to_list(bill*head, bill newbill)
+{
     if(*head == NULL){
         *head = newbill;
         return;
@@ -259,7 +333,8 @@ void add_bill_to_list(bill*head, bill newbill){
 
 
 // hàm in ra bill
-void print_BILL(bill BILL, node*root){
+void print_BILL(bill BILL, node*root)
+{
     printf("===============BILL===============\t\n");
     printf("Code of BILL: %d\n",BILL->ID_of_Bill);
     for(int i = 0; i < BILL->numberDish; i++){
@@ -274,7 +349,8 @@ void print_BILL(bill BILL, node*root){
 
 
 // hàm tìm bill bằng code
-void find_bill(bill*head,int x, node*root){
+void find_bill(bill*head,int x, node*root)
+{
     bill temp = *head;
     while(temp != NULL){
         if(temp->ID_of_Bill == x){
@@ -289,15 +365,16 @@ void file(bill BILL, node*root){
 
 }
 
-void customer_mode(node*Menu, bill BILL, order dish, bill*head){
+void customer_mode(node*Menu, bill BILL, order dish, bill*head)
+{
     order_dish(Menu,BILL,dish);
     while(1){
         printf("\n===============================\n");
         printf("Did you want to change your quantity of dish ? (YES/NO)");
         char choice[10];
         xoaBoNhoDem();
-        scanf("%s",&choice);
-        if(strcmp(choice,"YES") == 0){
+        scanf("%s",choice);
+        if(strcmp(choice,"YES") == 0||strcmp(choice,"yes") == 0){
             int code, number;
             printf("Enter code of dish you want to change:"); code = nhapsonguyen();
             printf("Enter the quantity you want to change:"); number = nhapsonguyen();
@@ -309,20 +386,70 @@ void customer_mode(node*Menu, bill BILL, order dish, bill*head){
     add_bill_to_list(head,BILL);
 }
 
+
+
+void management_mode(node**Menu, bill*head)
+{
+    printf("1. Menu management.\n");
+    printf("2. Revenue report.\n");
+    printf("3. Back.\n");
+    printf("Enter your choose:");
+    int option; option = nhapsonguyen();
+    switch(option){
+        case 1:{
+            printf("1. Add/remove food to menu.\n");
+            printf("2. Update dish price\n");
+            printf("Enter your choose:");
+            int select; select = nhapsonguyen();
+            switch(select){
+                case 1:{
+                    printf("1. Add food\n");
+                    printf("2. remove food\n");
+                    printf("Enter your choose:");
+                    int choice; choice = nhapsonguyen();
+                    switch(choice){
+                        case 1: {
+						add_food_menu(Menu);
+						break;
+                            }
+                        case 2: break;
+                        }
+                    }
+                }
+                case 2:{
+			        printf("1.Find bill from code of bill. ");
+                    printf("\nEnter your choose:");
+                    int choose;
+                    choose = nhapsonguyen();
+                    switch(choose){
+                        case 1:{
+                            printf("Input code of bill you want to find: ");
+                            int code; code = nhapsonguyen();
+                            find_bill(head,code,*Menu);
+                        }
+                        case 2:{}
+            }
+            break;
+		        }
+		}
+    }
+}
+
 // hàm hoạt động
-void operation(node*Menu, bill*head){
+void operation(node*Menu, bill*head)
+{
     int codeDay = 0;
     int lc = 0;
     int end = 0;
     order dish;
     printf("\nEnter transaction code:");
     codeDay = nhapsonguyen();
+    printMenu();
     while(1){
-        printMenu();
         printf("\n\t============ORDERING SYSTEM============\t\n");
 		printf( "1. Order food.\n");
 		printf( "2. Management mode.\n");
-		printf( "3. Secondary function.\n");
+        printf( "3. Enter code to end day.\n");
 		printf( "-------------------------------------\n");
 		printf( "Enter your choose :");
 		int choose = 0;
@@ -330,15 +457,17 @@ void operation(node*Menu, bill*head){
         printf("\n");
         switch(lc){
 		case 1:{
+            printMenu();
             bill BILL = create_bill();
-			// order_dish(Menu,BILL,dish);
-            // print_BILL(BILL,Menu);
-            // add_bill_to_list(head,BILL);
-            customer_mode(Menu, BILL, dish, head);
+            customer_mode(Menu, BILL, dish, head); 
             break;
         }
 		case 2:{
-			printf("Please enter the code:"); 
+			
+            management_mode(&Menu, head); break;
+        }
+        case 3:{
+            printf("Please enter the code:"); 
 			end = nhapsonguyen();
             if(end == codeDay){
                 //ham thống kê và in file
@@ -348,20 +477,6 @@ void operation(node*Menu, bill*head){
             else printf("Wrong code!");
             break;
         }
-		case 3:
-            printf("1.Find bill from code of bill. ");
-            printf("\n2.Add food.");
-            printf("\nEnter your choose:");
-            choose = nhapsonguyen();
-            switch(choose){
-                case 1:{
-                    printf("Input code of bill you want to find: ");
-                    int code; scanf("%d",&code);
-                    find_bill(head,code,Menu);
-                }
-                case 2:{}
-            }
-            break;
         default:
             printf("Please enter again!");
         }
