@@ -154,8 +154,8 @@ void order_dish(node*root, bill BILL, order dish){
     int m,n;
     int q=0;
     while(1){
-        printf("Enter the dish code:"); scanf("%d",&m);
-        printf("Enter quantity:"); scanf("%d",&n);
+        printf("Enter the dish code(Nhap ma mon an):"); scanf("%d",&m);
+        printf("Enter quantity(Nhap so luong):"); scanf("%d",&n);
         if(n < 0) {
             printf("So luong mon an khong phu hop\n");
             continue;
@@ -164,7 +164,7 @@ void order_dish(node*root, bill BILL, order dish){
         dish.number = n;
         if(m == 0 && n == 0) break;
         int check = 0; 
-        for(int i = 1; i<BILL->numberDish; i++){
+        for(int i = 0; i<BILL->numberDish; i++){// fix i=1-> i=0 đe tranh duyet thieu mon
             if(BILL->list[i].code == m) check = 1; 
         }
         if(!check && BILL->numberDish >= MAX_DISH){
@@ -182,7 +182,7 @@ void print_BILL(bill BILL, node*root){
             printf("%s x %d = %.2lf\n", found->data.name, BILL->list[i].number, BILL->list[i].number*found->data.cost);
         }
     }
-    printf("Total amount payable: %.2lf\n", BILL->total);
+    printf("Total amount payable(Tong so tien phai tra): %.2lf\n", BILL->total);
 }
 
 void file(bill BILL, node*root){
@@ -200,19 +200,128 @@ void find_bill(bill*head,int x, node*root){
     }
 }
 
+
+int count_bill(bill head){// tong so hoa don 1 ngay
+    int count = 0;
+    while(head != NULL){
+        count++;
+        head = head->next;
+    }
+    return count;
+}
+
+double total_revenue(bill head){ // tong doanh thu trong ngay
+    double sum = 0;
+    while(head != NULL){
+        if(head->total >= 2000000)
+            sum += head->total * 0.75;
+        else
+            sum += head->total;
+        head = head->next;
+    }
+    return sum;
+}
+
+void most_popular_dish(bill head, node* root){ // mon duoc goi nhieu nhat
+    int count[100] = {0};
+
+    while(head != NULL){
+        for(int i = 0; i < head->numberDish; i++){
+            count[head->list[i].code] += head->list[i].number;
+        }
+        head = head->next;
+    }
+
+    int max = 0, index = -1;
+    for(int i = 1; i < 100; i++){
+        if(count[i] > max){
+            max = count[i];
+            index = i;
+        }
+    }
+
+    if(index != -1){
+        node* found = search_dish(root, index);
+        if(found != NULL){
+            printf("Most popular dish: %s (%d orders)\n", found->data.name, max);
+        }
+    }
+}
+
+void max_bill(bill head){// hoa don gia tri dat nhat
+    if(head == NULL) return;
+
+    bill maxBill = head;
+
+    while(head != NULL){
+        if(head->total > maxBill->total){
+            maxBill = head;
+        }
+        head = head->next;
+    }
+
+    printf("Max bill: %d - %.2lf\n", maxBill->codeOfBill, maxBill->total);
+}
+
+void statistics(bill head, node* root){ // ham thong ke tong hop
+    printf("\n===== DAILY STATISTICS =====\n");
+
+    printf("Total bills: %d\n", count_bill(head));
+    printf("Total revenue: %.2lf\n", total_revenue(head));
+
+    most_popular_dish(head, root);
+    max_bill(head);
+}
+
+void write_file(bill head, node* root){
+    FILE *f = fopen("bill.txt", "w");
+    if(f == NULL){
+        printf("Cannot open file!\n");
+        return;
+    }
+
+    bill temp = head;
+    while(temp != NULL){
+        fprintf(f, "=========== BILL %d ===========\n", temp->codeOfBill);
+
+        for(int i = 0; i < temp->numberDish; i++){
+            node* found = search_dish(root, temp->list[i].code);
+            if(found != NULL){
+                fprintf(f, "%s x %d = %.2lf\n",
+                    found->data.name,
+                    temp->list[i].number,
+                    temp->list[i].number * found->data.cost);
+            }
+        }
+
+        double final_total = temp->total;
+        if(final_total >= 2000000){
+            final_total *= 0.75;
+            fprintf(f, "Discount 25%% applied!\n");
+        }
+
+        fprintf(f, "Total: %.2lf\n\n", final_total);
+
+        temp = temp->next;
+    }
+
+    fclose(f);
+    printf("Write file successfully!\n");
+}
+
 void operation(node*Menu, bill*head){
     int codeDay;
-    printf("\nEnter transaction code:"); scanf("%d", &codeDay);
+    printf("\nEnter transaction code (Nhap ma giao dich):"); scanf("%d", &codeDay);
     order dish;
     printf("  \t------------------------MENU------------------------\n");
     printMenu(Menu);
     while(1){
         printf("\n\t============ORDERING SYSTEM============\t\n");
-		printf( "1. Order food.\n");
-		printf( "2. Enter the code to end the day.\n");
-		printf( "3. Secondary function.\n");
+		printf( "1. Order food. (Dat mon an.)\n");
+		printf( "2. Enter the code to end the day.(Nhap ma de ket thuc ngay.) \n");
+		printf( "3. Secondary function.(Chuc nang phu)\n");
 		printf( "-------------------------------------\n");
-		printf( "Enter your choose :");
+		printf( "Enter your choose (Nhap lua chon cua ban) :");
 		int lc; scanf ("%d",&lc);
         printf("\n");
 		if(lc == 1){
@@ -225,6 +334,8 @@ void operation(node*Menu, bill*head){
             int end;
 			printf("Please enter the code:"); scanf("%d",&end);
             if(end == codeDay){
+                statistics(*head, Menu);
+                write_file(*head, Menu);
                 //ham thống kê và in file
                 printf("End of the day!");
                 break;
@@ -235,7 +346,7 @@ void operation(node*Menu, bill*head){
             printf("1.Find bill from code of bill. ");
             printf("\n2.Add food.");
             int choose;
-            printf("\nEnter your choose:"); scanf("%d",&choose);
+            printf("\nEnter your choose(Nhap lua chon cua ban):"); scanf("%d",&choose);
             switch(choose){
                 case 1:{
                     printf("Input code of bill you want to find: ");
@@ -251,6 +362,9 @@ void operation(node*Menu, bill*head){
 
 	}
 }
+
+
+
 
 int main(){
     printf("  \t\t_____________________________________________________________________________________________________\n");
