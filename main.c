@@ -319,8 +319,10 @@ void order_dish(node*root, bill BILL, order dish)
     }
     int m = 0;
     int n = 0;
-    int q=0;
     while(1){
+        if(BILL->numberDish  == MAX_DISH){
+            printf("Max 5 dishes.\n"); break;
+        }        
         printf("Enter the dish code:"); m = nhapsonguyen();
         printf("Enter quantity:"); n = nhapsonguyen();
         if(n < 0) continue;
@@ -331,9 +333,7 @@ void order_dish(node*root, bill BILL, order dish)
         for(int i = 0; i<BILL->numberDish; i++){
             if(BILL->list[i].code == m) check = 1; 
         }
-        if(!check && BILL->numberDish == MAX_DISH){
-            printf("Max 5 dishes.\n"); break;
-        }
+
         add_order_to_bill(BILL,root,dish);
     }
 }
@@ -404,8 +404,112 @@ void find_bill(bill*head,int x, node*root)
 }
 
 
-void file(bill BILL, node*root){
+int count_bill(bill head){// tong so hoa don 1 ngay
+    int count = 0;
+    while(head != NULL){
+        count++;
+        head = head->next;
+    }
+    return count;
+}
 
+double total_revenue(bill head){ // tong doanh thu trong ngay
+    double sum = 0;
+    while(head != NULL){
+        if(head->total >= 2000000)
+            sum += head->total * 0.75;
+        else
+            sum += head->total;
+        head = head->next;
+    }
+    return sum;
+}
+
+void most_popular_dish(bill head, node* root){ // mon duoc goi nhieu nhat
+    int count[100] = {0};
+
+    while(head != NULL){
+        for(int i = 0; i < head->numberDish; i++){
+            count[head->list[i].code] += head->list[i].number;
+        }
+        head = head->next;
+    }
+
+    int max = 0, index = -1;
+    for(int i = 1; i < 100; i++){
+        if(count[i] > max){
+            max = count[i];
+            index = i;
+        }
+    }
+
+    if(index != -1){
+        node* found = search_dish(root, index);
+        if(found != NULL){
+            printf("Most popular dish: %s (%d orders)\n", found->data.name, max);
+        }
+    }
+}
+
+void max_bill(bill head){// hoa don gia tri dat nhat
+    if(head == NULL) return;
+
+    bill maxBill = head;
+
+    while(head != NULL){
+        if(head->total > maxBill->total){
+            maxBill = head;
+        }
+        head = head->next;
+    }
+
+    printf("Max bill: %d - %.2lf\n", maxBill->ID_of_Bill, maxBill->total);
+}
+
+void statistics(bill head, node* root){ // ham thong ke tong hop
+    printf("\n===== DAILY STATISTICS =====\n");
+
+    printf("Total bills: %d\n", count_bill(head));
+    printf("Total revenue: %.2lf\n", total_revenue(head));
+
+    most_popular_dish(head, root);
+    max_bill(head);
+}
+
+void write_file(bill head, node* root){
+    FILE *f = fopen("bill.txt", "w");
+    if(f == NULL){
+        printf("Cannot open file!\n");
+        return;
+    }
+
+    bill temp = head;
+    while(temp != NULL){
+        fprintf(f, "=========== BILL %d ===========\n", temp->ID_of_Bill);
+
+        for(int i = 0; i < temp->numberDish; i++){
+            node* found = search_dish(root, temp->list[i].code);
+            if(found != NULL){
+                fprintf(f, "%s x %d = %.2lf\n",
+                    found->data.name,
+                    temp->list[i].number,
+                    temp->list[i].number * found->data.cost);
+            }
+        }
+
+        double final_total = temp->total;
+        if(final_total >= 2000000){
+            final_total *= 0.75;
+            fprintf(f, "Discount 25%% applied!\n");
+        }
+
+        fprintf(f, "Total: %.2lf\n\n", final_total);
+
+        temp = temp->next;
+    }
+
+    fclose(f);
+    printf("Write file successfully!\n");
 }
 
 // chế độ khách hàng
@@ -434,7 +538,7 @@ void customer_mode(node*Menu, bill BILL, order dish, bill*head)
 void management_mode(node**Menu, bill*head)
 {
     printf("1. Menu management.\n");
-    printf("2. Revenue report.\n");
+    printf("2. Admin mode.\n");
     printf("3. Back.\n");
     printf("Enter your choose:");
     int option; option = nhapsonguyen();
@@ -473,8 +577,9 @@ void management_mode(node**Menu, bill*head)
             break;
 		}
         case 2:{
-            printf("1.Find bill from code of bill. ");
-            printf("\nEnter your choose:");
+            printf("1.Find bill from code of bill.\n ");
+            printf("2.Revenue report.\n");
+            printf("Enter your choose:");
             int choose;
             choose = nhapsonguyen();
             switch(choose){
@@ -484,9 +589,11 @@ void management_mode(node**Menu, bill*head)
                     find_bill(head,code,*Menu);
                     break;
                 }
-                case 2:{}
-                }
+                case 2:{
+                	statistics(*head,*Menu);
+				}
             }
+        }
         case 3: break;
         default: break;
     }
@@ -527,7 +634,7 @@ void operation(node*Menu, bill*head)
             printf("Please enter the code:"); 
 			end = nhapsonguyen();
             if(end == codeDay){
-                //ham thống kê và in file
+                write_file(*head,Menu);
                 printf("End of the day!");
                 break;
             }
