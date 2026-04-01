@@ -23,7 +23,6 @@ struct food{
 struct order{
     int code;
     int number;
-    char note[MAX_NAME];
 };
 
 struct bill{
@@ -358,6 +357,32 @@ void change_quantity(int code, node*root, bill BILL, int number)
     BILL->total += (double)number*foundDish->data.cost;
 }
 
+void update_dish_price(node* root, int code) {
+    node* found = search_dish(root, code);
+    if (found == NULL) {
+        printf("\nDish not found!");
+        return;
+    }
+
+    double new_price;
+    printf("\nName of dish: %s", found->data.name);
+    printf("\nCurrent price: %.2lf", found->data.cost);
+    printf("\nEnter new price: ");
+    
+    while (scanf("%lf", &new_price) != 1 || new_price < 0) {
+        printf("Invalid price! Enter again: ");
+        xoaBoNhoDem();
+    }
+    found->data.cost = new_price;
+    for (int i = 0; i < total_of_dish; i++) {
+        if (strcmp(menuNames[i], found->data.name) == 0) {
+            menuPrices[i] = new_price;
+            break;
+        }
+    }
+        printf("\nThe price of %s has been updated.", found->data.name);
+}
+
 // thêm bill vào danh sách 
 void add_bill_to_list(bill*head, bill newbill)
 {
@@ -416,7 +441,8 @@ void find_bill(bill*head,int x, node*root)
 }
 
 // tong so hoa don 1 ngay
-int count_bill(bill head){
+int count_bill(bill head)
+{
     int count = 0;
     while(head != NULL){
         count++;
@@ -425,7 +451,8 @@ int count_bill(bill head){
     return count;
 }
 // tong doanh thu trong ngay
-double total_revenue(bill head){ 
+double total_revenue(bill head)
+{ 
     double sum = 0;
     while(head != NULL){
         if(head->total >= 2000000)
@@ -437,7 +464,8 @@ double total_revenue(bill head){
     return sum;
 }
 // mon duoc goi nhieu nhat
-void most_popular_dish(bill head, node* root){ 
+void most_popular_dish(bill head, node* root)
+{ 
     int count[100] = {0};
 
     while(head != NULL){
@@ -463,7 +491,8 @@ void most_popular_dish(bill head, node* root){
     }
 }
 // hoa don gia tri dat nhat
-void max_bill(bill head){
+void max_bill(bill head)
+{
     if(head == NULL) return;
 
     bill maxBill = head;
@@ -478,7 +507,8 @@ void max_bill(bill head){
     printf("Max bill: %d - %.2lf\n", maxBill->ID_of_Bill, maxBill->total);
 }
 // ham thong ke tong hop
-void statistics(bill head, node* root){ 
+void statistics(bill head, node* root)
+{ 
     printf("\n========== DAILY STATISTICS ==========\n");
 
     printf("Total bills: %d\n", count_bill(head));
@@ -488,7 +518,65 @@ void statistics(bill head, node* root){
     max_bill(head);
 }
 
-void write_file(bill head, node* root){
+bill create_summary_bill(bill head, node* root)
+{
+    bill summary = create_bill();
+
+    while(head != NULL){
+        for(int i = 0; i < head->numberDish; i++){
+            order dish;
+            dish.code = head->list[i].code;
+            dish.number = head->list[i].number;
+
+            add_order_to_bill(summary, root, dish);
+        }
+        head = head->next;
+    }
+
+    return summary;
+}
+
+
+void print_summary_bill(bill summary, node* root)
+{
+    printf("\n=========== SUMMARY BILL ===========\n");
+
+    for(int i = 0; i < summary->numberDish; i++){
+        node* found = search_dish(root, summary->list[i].code);
+        if(found != NULL){
+            printf("%s x %d = %.2lf\n",
+                found->data.name,
+                summary->list[i].number,
+                summary->list[i].number * found->data.cost);
+        }
+    }
+
+    double final_total = summary->total;
+
+    if(final_total >= 2000000){
+        printf("Discount 25%% applied!\n");
+        final_total *= 0.75;
+    }
+
+    printf("TOTAL ALL DAY: %.2lf\n", final_total);
+}
+
+void free_data(node** root, bill* head) {
+    void free_tree(node* n) {
+        if (!n) return;
+        free_tree(n->left); free_tree(n->right); free(n);
+    }
+    free_tree(*root); *root = NULL;
+    bill curr = *head;
+    while(curr){
+        bill next = curr->next;
+        free(curr->list); free(curr); curr = next;
+    }
+    *head = NULL;
+}
+
+void write_file(bill head, node* root)
+{
     FILE *f = fopen("bill.txt", "w");
     if(f == NULL){
         printf("Cannot open file!\n");
@@ -496,6 +584,7 @@ void write_file(bill head, node* root){
     }
 
     bill temp = head;
+    double totalDay = 0;
     while(temp != NULL){
         fprintf(f, "=========== BILL %d ===========\n", temp->ID_of_Bill);
 
@@ -508,17 +597,22 @@ void write_file(bill head, node* root){
                     temp->list[i].number * found->data.cost);
             }
         }
-
-        double final_total = temp->total;
-        if(final_total >= 2000000){
-            final_total *= 0.75;
-            fprintf(f, "Discount 25%% applied!\n");
+        double original = temp->total;
+        double final_total = original;
+        fprintf(f,"Original total: %.2lf\n", original);
+        if(original >= 2000000){
+            double discount = original*0.25;
+            final_total = original*0.75;
+            fprintf(f, "Discount (25%%): -%.2lf\n", discount);
         }
-
-        fprintf(f, "Total: %.2lf\n\n", final_total);
-
+        fprintf(f, "Final total: %.2lf\n\n", final_total);
+        totalDay += final_total;
         temp = temp->next;
     }
+    // ===== THỐNG KÊ CUỐI NGÀY =====
+    fprintf(f, "=========== DAILY SUMMARY ===========\n");
+    fprintf(f, "Total bills: %d\n", count_bill(head));
+    fprintf(f, "Total revenue: %.2lf\n", totalDay);
 
     fclose(f);
     printf("Write file successfully!\n");
@@ -586,7 +680,12 @@ void management_mode(node**Menu, bill*head)
                     }
                     break;
                 }
-                case 2: break;
+                case 2: {
+                	printf("\nEnter dish code to update price: ");
+                    int c = nhapsonguyen();
+                    update_dish_price(*Menu, c);
+					break;
+				}
 		    }
             break;
 		}
@@ -649,7 +748,10 @@ void operation(node*Menu, bill*head)
             printf("Please enter the code:"); 
 			end = nhapsonguyen();
             if(end == codeDay){
+            	bill summary = create_summary_bill(*head, Menu);
+                print_summary_bill(summary, Menu);
                 write_file(*head,Menu);
+                free_data(&Menu, head);
                 printf("End of the day!");
                 break;
             }
