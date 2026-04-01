@@ -17,7 +17,7 @@ struct food{
     int code;
     char name[MAX_NAME];
     double cost;
-    char category[30];
+    char category[40];
 };
 
 struct order{
@@ -174,7 +174,7 @@ node* menu()
     food menu;
     node*root = NULL;
     root = addFood(root, 1, "Goi sua", 100000, "Khai vi");
-    root = addFood(root, 2, "Salad ca hoi", 300000, "Khai vi");
+    root = addFood(root, 2, "Salad ca hoi", 400000, "Khai vi");
     root = addFood(root, 3, "Goi bap bo", 150000, "Khai vi");
 
     root = addFood(root, 4, "Bo Wagyu bit tet", 800000, "Mon chinh");
@@ -182,9 +182,9 @@ node* menu()
     root = addFood(root, 6, "Tom hum xao bo toi", 600000, "Mon chinh");
     root = addFood(root, 7, "Com chien duong chau", 100000, "Mon chinh");
     root = addFood(root, 8, "Ga sot teriyaki", 450000, "Mon chinh");
-    root = addFood(root, 9, "Ca ri bo", 300000, "Mon chinh");
+    root = addFood(root, 9, "Ca ri bo", 400000, "Mon chinh");
 
-    root = addFood(root, 10, "Tiramisu", 30000, "Trang mieng");
+    root = addFood(root, 10, "Tiramisu", 40000, "Trang mieng");
     root = addFood(root, 11, "Trai cay ngu vi", 100000, "Trang mieng");
     root = addFood(root, 12, "Pana cotta", 20000, "Trang mieng");
     return root;
@@ -240,7 +240,7 @@ void add_food_menu(node**root)
     int code;
     char name[MAX_NAME];
     double cost;
-    char category[30];
+    char category[40];
     printf("Enter dish code: "); code = nhapsonguyen();
     if(search_dish(*root, code) != NULL){
         printf("Code %d already exists!\n", code); return;
@@ -277,7 +277,8 @@ void printMenu()
     printf("\n\t===============MENU===============\n");
     for(int i = 0; i < 3; i++){
         printf("\n[%s]\n",group[i]);
-        printf("------------------------------");
+        for(int h=0; h<40; h++) printf("-");
+        printf("\n");
         int found = 0;
         for(int j = 0; j < total_of_dish; j++){
             if(strcmp(group[i],menuCategory[j]) == 0){
@@ -382,8 +383,19 @@ void print_BILL(bill BILL, node*root)
             printf("%s x %d = %.2lf\n", found->data.name, BILL->list[i].number, BILL->list[i].number*found->data.cost);
         }
     }
-    printf("--------------------------------------\n");
-    printf("Total amount payable: %.2lf\n", BILL->total);
+    for(int i= 0; i<40; i++)printf("-");
+    printf("\n");
+    double final = BILL->total;
+    printf("Subtotal: %.2lf\n", BILL->total);
+    if(BILL->total >= 2000000){
+    	double discount = BILL->total * 0.25;
+    	final = BILL->total - discount;
+    	printf("Discount (25%%): -%5.2lf\n", discount);
+    }
+   	printf("Total: %5.2lf\n", final);
+   	for(int i=0; i<40; i++) printf("=");
+	printf("\n");
+	
 }
 
 // hàm tìm bill bằng code
@@ -417,7 +429,7 @@ double total_revenue(bill head){ // tong doanh thu trong ngay
     double sum = 0;
     while(head != NULL){
         if(head->total >= 2000000)
-            sum += head->total * 0.75;
+            sum += (head->total * 0.75);
         else
             sum += head->total;
         head = head->next;
@@ -467,7 +479,7 @@ void max_bill(bill head){// hoa don gia tri dat nhat
 }
 
 void statistics(bill head, node* root){ // ham thong ke tong hop
-    printf("\n===== DAILY STATISTICS =====\n");
+    printf("\n========== DAILY STATISTICS ==========\n");
 
     printf("Total bills: %d\n", count_bill(head));
     printf("Total revenue: %.2lf\n", total_revenue(head));
@@ -517,8 +529,10 @@ void customer_mode(node*Menu, bill BILL, order dish, bill*head)
 {
     order_dish(Menu,BILL,dish);
     while(1){
-        printf("\n===============================\n");
-        printf("Did you want to change your quantity of dish ? (YES/NO)");
+    	printf("\n");
+        for(int i = 0; i<40; i++) printf("=");
+        printf("\n");
+		printf("Did you want to change your quantity of dish ? (YES/NO)");
         char choice[10];
         xoaBoNhoDem();
         scanf("%s",choice);
@@ -614,7 +628,8 @@ void operation(node*Menu, bill*head)
 		printf( "1. Order food.\n");
 		printf( "2. Management mode.\n");
         printf( "3. Enter code to end day.\n");
-		printf( "-------------------------------------\n");
+		for(int i = 0; i<40; i++) printf( "-");
+		printf("\n");
 		printf( "Enter your choose :");
 		int choose = 0;
 		lc = nhapsonguyen();
