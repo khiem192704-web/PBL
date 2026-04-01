@@ -649,15 +649,15 @@ void operation(node*Menu, bill*head)
 }
 
 int main(){
-    printf("  \t\t_____________________________________________________________________________________________________\n");
-    printf("  \t\t|                         Truong: Dai Hoc Bach Khoa- Dai hoc Da Nang                                |\n");
-	printf("  \t\t|                                Khoa: Cong nghe thong tin                                          |\n");
-	printf("  \t\t|                                PBL1: DO AN LAP TRINH TINH TOAN                                    |\n");
-	printf("  \t\t|                     De tai: XAY DUNG UNG DUNG DAT MON AN VA THANH TOAN DON HANG                   |\n");
-	printf("  \t\t|                                Giao vien huong dan: Tran Ho Thuy Tien                             |\n");
-	printf("  \t\t|                                Sinh vien: Dang Gia Khiem - 25T_DT2                                |\n");
-	printf("  \t\t|                                           Nguyen Minh Hien - 25T_DT2                              |\n");
-	printf("  \t\t|___________________________________________________________________________________________________|\n");
+    printf("  \t_____________________________________________________________________________________________________\n");
+    printf("  \t|                         Truong: Dai Hoc Bach Khoa- Dai hoc Da Nang                                |\n");
+	printf("  \t|                                Khoa: Cong nghe thong tin                                          |\n");
+	printf("  \t|                                PBL1: DO AN LAP TRINH TINH TOAN                                    |\n");
+	printf("  \t|                     De tai: XAY DUNG UNG DUNG DAT MON AN VA THANH TOAN DON HANG                   |\n");
+	printf("  \t|                                Giao vien huong dan: Tran Ho Thuy Tien                             |\n");
+	printf("  \t|                                Sinh vien: Dang Gia Khiem - 25T_DT2                                |\n");
+	printf("  \t|                                           Nguyen Minh Hien - 25T_DT2                              |\n");
+	printf("  \t|___________________________________________________________________________________________________|\n");
     node*Menu = menu();
     bill head = NULL;
     operation(Menu,&head);
