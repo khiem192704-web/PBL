@@ -415,8 +415,8 @@ void find_bill(bill*head,int x, node*root)
     if(temp == NULL) printf("The bill is not found!");
 }
 
-
-int count_bill(bill head){// tong so hoa don 1 ngay
+// tong so hoa don 1 ngay
+int count_bill(bill head){
     int count = 0;
     while(head != NULL){
         count++;
@@ -424,8 +424,8 @@ int count_bill(bill head){// tong so hoa don 1 ngay
     }
     return count;
 }
-
-double total_revenue(bill head){ // tong doanh thu trong ngay
+// tong doanh thu trong ngay
+double total_revenue(bill head){ 
     double sum = 0;
     while(head != NULL){
         if(head->total >= 2000000)
@@ -436,8 +436,8 @@ double total_revenue(bill head){ // tong doanh thu trong ngay
     }
     return sum;
 }
-
-void most_popular_dish(bill head, node* root){ // mon duoc goi nhieu nhat
+// mon duoc goi nhieu nhat
+void most_popular_dish(bill head, node* root){ 
     int count[100] = {0};
 
     while(head != NULL){
@@ -462,8 +462,8 @@ void most_popular_dish(bill head, node* root){ // mon duoc goi nhieu nhat
         }
     }
 }
-
-void max_bill(bill head){// hoa don gia tri dat nhat
+// hoa don gia tri dat nhat
+void max_bill(bill head){
     if(head == NULL) return;
 
     bill maxBill = head;
@@ -477,8 +477,8 @@ void max_bill(bill head){// hoa don gia tri dat nhat
 
     printf("Max bill: %d - %.2lf\n", maxBill->ID_of_Bill, maxBill->total);
 }
-
-void statistics(bill head, node* root){ // ham thong ke tong hop
+// ham thong ke tong hop
+void statistics(bill head, node* root){ 
     printf("\n========== DAILY STATISTICS ==========\n");
 
     printf("Total bills: %d\n", count_bill(head));
@@ -591,9 +591,9 @@ void management_mode(node**Menu, bill*head)
             break;
 		}
         case 2:{
-            printf("1.Find bill from code of bill.\n ");
-            printf("2.Revenue report.\n");
-            printf("Enter your choose:");
+            printf("\n1.Find bill from code of bill. ");
+            printf("\n2.Revenue report.");
+            printf("\nEnter your choose:");
             int choose;
             choose = nhapsonguyen();
             switch(choose){
