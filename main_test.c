@@ -273,6 +273,47 @@ void statistics(bill head, node* root){ // ham thong ke tong hop
     max_bill(head);
 }
 
+bill create_summary_bill(bill head, node* root){
+    bill summary = create_bill();
+
+    while(head != NULL){
+        for(int i = 0; i < head->numberDish; i++){
+            order dish;
+            dish.code = head->list[i].code;
+            dish.number = head->list[i].number;
+
+            add_order_to_bill(summary, root, dish);
+        }
+        head = head->next;
+    }
+
+    return summary;
+}
+
+
+void print_summary_bill(bill summary, node* root){
+    printf("\n=========== SUMMARY BILL ===========\n");
+
+    for(int i = 0; i < summary->numberDish; i++){
+        node* found = search_dish(root, summary->list[i].code);
+        if(found != NULL){
+            printf("%s x %d = %.2lf\n",
+                found->data.name,
+                summary->list[i].number,
+                summary->list[i].number * found->data.cost);
+        }
+    }
+
+    double final_total = summary->total;
+
+    if(final_total >= 2000000){
+        printf("Discount 25%% applied!\n");
+        final_total *= 0.75;
+    }
+
+    printf("TOTAL ALL DAY: %.2lf\n", final_total);
+}
+
 void write_file(bill head, node* root){
     FILE *f = fopen("bill.txt", "w");
     if(f == NULL){
@@ -281,6 +322,8 @@ void write_file(bill head, node* root){
     }
 
     bill temp = head;
+    double totalDay = 0;
+
     while(temp != NULL){
         fprintf(f, "=========== BILL %d ===========\n", temp->codeOfBill);
 
@@ -294,20 +337,32 @@ void write_file(bill head, node* root){
             }
         }
 
-        double final_total = temp->total;
-        if(final_total >= 2000000){
-            final_total *= 0.75;
-            fprintf(f, "Discount 25%% applied!\n");
+        double original = temp->total;
+        double final_total = original;
+
+        fprintf(f, "Original total: %.2lf\n", original);
+
+        if(original >= 2000000){
+            double discount = original * 0.25;
+            final_total = original * 0.75;
+            fprintf(f, "Discount (25%%): -%.2lf\n", discount);
         }
 
-        fprintf(f, "Total: %.2lf\n\n", final_total);
+        fprintf(f, "Final total: %.2lf\n\n", final_total);
 
+        totalDay += final_total;
         temp = temp->next;
     }
+
+    // ===== THỐNG KÊ CUỐI NGÀY =====
+    fprintf(f, "=========== DAILY SUMMARY ===========\n");
+    fprintf(f, "Total bills: %d\n", count_bill(head));
+    fprintf(f, "Total revenue: %.2lf\n", totalDay);
 
     fclose(f);
     printf("Write file successfully!\n");
 }
+
 
 void operation(node*Menu, bill*head){
     int codeDay;
@@ -332,16 +387,21 @@ void operation(node*Menu, bill*head){
 		}
 		else if(lc == 2){
             int end;
-			printf("Please enter the code:"); scanf("%d",&end);
+            printf("Please enter the code:"); scanf("%d",&end);
+
             if(end == codeDay){
                 statistics(*head, Menu);
+
+                bill summary = create_summary_bill(*head, Menu);
+                print_summary_bill(summary, Menu);
+
                 write_file(*head, Menu);
-                //ham thống kê và in file
+
                 printf("End of the day!");
                 break;
             }
             else printf("Wrong code!");
-		}
+        }
 		else if(lc == 3){
             printf("1.Find bill from code of bill. ");
             printf("\n2.Add food.");
