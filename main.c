@@ -561,11 +561,16 @@ void print_summary_bill(bill summary, node* root)
     printf("TOTAL ALL DAY: %.2lf\n", final_total);
 }
 
-void free_data(node** root, bill* head) {
-    void free_tree(node* n) {
+// giải phóng bộ nhớ của bst
+void free_tree(node* n)
+{
         if (!n) return;
         free_tree(n->left); free_tree(n->right); free(n);
     }
+
+// giải phóng dữ liệu
+void free_data(node** root, bill* head)
+{
     free_tree(*root); *root = NULL;
     bill curr = *head;
     while(curr){
@@ -575,6 +580,7 @@ void free_data(node** root, bill* head) {
     *head = NULL;
 }
 
+// hàm xuất hóa đơn và doanh thu ra file
 void write_file(bill head, node* root)
 {
     FILE *f = fopen("bill.txt", "w");
@@ -582,7 +588,6 @@ void write_file(bill head, node* root)
         printf("Cannot open file!\n");
         return;
     }
-
     bill temp = head;
     double totalDay = 0;
     while(temp != NULL){
@@ -654,12 +659,14 @@ void management_mode(node**Menu, bill*head)
         case 1:{
             printf("1. Add/remove food to menu.\n");
             printf("2. Update dish price\n");
+            printf("3. Back.\n");
             printf("Enter your choose:");
             int select; select = nhapsonguyen();
             switch(select){
                 case 1:{
                     printf("1. Add food\n");
                     printf("2. Remove food\n");
+                    printf("3. Back.\n");
                     printf("Enter your choose:");
                     int choice; choice = nhapsonguyen();
                     switch(choice){
@@ -677,6 +684,8 @@ void management_mode(node**Menu, bill*head)
                         }
                         break;
                         }
+                        case 3: break;
+                        default: printf("Please enter again.\n"); break;
                     }
                     break;
                 }
@@ -686,12 +695,15 @@ void management_mode(node**Menu, bill*head)
                     update_dish_price(*Menu, c);
 					break;
 				}
+				case 3: break;
+				default: printf("Please enter again.\n"); break;
 		    }
             break;
 		}
         case 2:{
             printf("\n1.Find bill from code of bill. ");
             printf("\n2.Revenue report.");
+            printf("\n3.Back.");
             printf("\nEnter your choose:");
             int choose;
             choose = nhapsonguyen();
@@ -705,6 +717,8 @@ void management_mode(node**Menu, bill*head)
                 case 2:{
                 	statistics(*head,*Menu);
 				}
+				case 3: break;
+				default: printf("Please enter again.\n"); break;
             }
         }
         case 3: break;
