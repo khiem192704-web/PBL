@@ -92,7 +92,6 @@ void find_bill(bill*head,int x, node*root);
 void customer_mode(node*Menu, bill BILL, order dish, bill*head);
 void management_mode(node**Menu, bill*head);
 
-
 // tạo root kiểu dữ liệu food
 node* createNode(food x)
 {
