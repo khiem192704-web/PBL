@@ -74,24 +74,6 @@ int nhapsonguyen()
     return n;
 }
 
-node* createNode(food x);
-food createDish(int code, char name[], double cost, char category[]);
-bill create_bill();
-node* insert_food_to_root(node* root, food x);
-node*search_dish(node*root, int code);
-node* addFood(node* root, int code, char name[], double cost, char category[]);
-node* menu();
-void add_food_menu(node**root);
-void printMenu();
-void add_order_to_bill(bill head, node*root, order dish );
-void order_dish(node*root, bill BILL, order dish);
-void change_quantity(int code, node*root, bill BILL, int number);
-void add_bill_to_list(bill*head, bill newbill);
-void print_BILL(bill BILL, node*root);
-void find_bill(bill*head,int x, node*root);
-void customer_mode(node*Menu, bill BILL, order dish, bill*head);
-void management_mode(node**Menu, bill*head);
-
 // tạo root kiểu dữ liệu food
 node* createNode(food x)
 {
