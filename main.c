@@ -5,6 +5,7 @@
 #define MAX_NAME 50
 #define MAX_MENU 20
 #define MAX_DISH 5
+#define MAX_CODE 1000
 
 int total_of_dish = 0;
 
@@ -190,7 +191,7 @@ node* remove_food(node* root, int code)
 		{
             if(strcmp(menuNames[i], root->data.name) == 0)
 			{
-                for( int j = i; j < total_of_dish; j++)
+                for( int j = i; j < total_of_dish-1; j++)
 				{
                     strcpy(menuNames[j],menuNames[j+1]);
                     menuPrices[j] = menuPrices[j+1];
@@ -292,11 +293,7 @@ void add_order_to_bill(bill head, node*root, order dish )
 {
 	// if (head->numberDish >= MAX_DISH) return;
 	node*found = search_dish(root,dish.code);
-	if(found == NULL)
-	{
-		printf("This dish is not available on the menu!\n");
-		return;
-	}
+	if(found == NULL) return;
 	for(int i = 0; i < head->numberDish; i++)
 	{
         if(head->list[i].code ==  dish.code){
@@ -327,14 +324,19 @@ void order_dish(node*root, bill BILL, order dish)
             printf("Max 5 dishes.\n"); break;
         }        
         printf("Enter the dish code:"); m = nhapsonguyen();
+        node*found = search_dish(root,m);
+        if(found == NULL)
+        {
+            printf("Do not found dish code!"); continue;
+        }
         printf("Enter quantity:"); n = nhapsonguyen();
         if(n < 0){
         	printf("The quantity of dishes is not appropriate!");
         	continue;
 		}
+        if(m == 0 && n == 0) break;
         dish.code = m;        
         dish.number = n;
-        if(m == 0 && n == 0) break;
         add_order_to_bill(BILL,root,dish);
     }
 }
@@ -352,12 +354,19 @@ void change_quantity(int code, node*root, bill BILL, int number)
             break;
         }
     }
-    if(found == -1) return;
-    node *foundDish = search_dish(root, code);
-    if(foundDish == NULL) return;
-    BILL->total -= (double)BILL->list[found].number*foundDish->data.cost;
-    BILL->list[found].number = number;
-    BILL->total += (double)number*foundDish->data.cost;
+    if(found == -1) 
+    {
+        printf("Dish not found in bill!\n");
+        return;
+    }
+    else
+    {
+        node *foundDish = search_dish(root, code);
+        if(foundDish == NULL) return;
+        BILL->total -= (double)BILL->list[found].number*foundDish->data.cost;
+        BILL->list[found].number = number;
+        BILL->total += (double)number*foundDish->data.cost;
+    }
 }
 
 void update_dish_price(node* root, int code) 
@@ -484,7 +493,7 @@ double total_revenue(bill head)
 // mon duoc goi nhieu nhat
 void most_popular_dish(bill head, node* root)
 { 
-    int count[100] = {0};
+    int count[MAX_CODE] = {0};
 
     while(head != NULL)
 	{
@@ -664,11 +673,9 @@ void customer_mode(node*Menu, bill BILL, order dish, bill*head)
     	printf("\n");
         for(int i = 0; i<40; i++) printf("=");
         printf("\n");
-		printf("Did you want to change your quantity of dish ? (YES/NO)");
-        char choice[10];
-        xoaBoNhoDem();
-        scanf("%s",choice);
-        if(strcmp(choice,"YES") == 0||strcmp(choice,"yes") == 0)
+		printf("Did you want to change your quantity of dish ? (1.YES/2.NO)");
+        int choice; choice = nhapsonguyen();
+        if(choice  == 1 )
 		{
             int code, number;
             printf("Enter code of dish you want to change:"); code = nhapsonguyen();
@@ -685,7 +692,8 @@ void customer_mode(node*Menu, bill BILL, order dish, bill*head)
             }
             change_quantity(code, Menu, BILL, number);
         }
-        else{break;}
+        else if(choice == 2){break;}
+        else{printf("Please enter again!");}
     }
     print_BILL(BILL,Menu);
     add_bill_to_list(head,BILL);
@@ -764,6 +772,7 @@ void management_mode(node**Menu, bill*head)
 				case 3: break;
 				default: printf("Please enter again.\n"); break;
             }
+            break;
         }
         case 3: break;
         default: break;
@@ -810,6 +819,8 @@ void operation(node*Menu, bill*head)
                 print_summary_bill(summary, Menu);
                 write_file(*head,Menu);
                 free_data(&Menu, head);
+                free(summary->list);
+                free(summary);
                 printf("End of the day!");
                 break;
             }
