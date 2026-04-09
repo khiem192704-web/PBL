@@ -232,28 +232,6 @@ void add_food_menu(node**root)
     *root = addFood(*root, code, name, cost,category);
 }
 
-// in ra menu
-// void printMenu()
-// {
-//     char group[3][20] = {"Khai vi", "Mon chinh", "Trang mieng"};
-//     printf("\n\t===============MENU===============\n");
-//     for(int i = 0; i < 3; i++)
-// 	{
-//         printf("\n[%s]\n",group[i]);
-//         for(int h=0; h<40; h++) printf("-");
-//         printf("\n");
-//         int found = 0;
-//         for(int j = 0; j < total_of_dish; j++)
-// 		{
-//             if(strcmp(group[i],menuCategory[j]) == 0)
-// 			{
-//                 printf("\n%d: %s  %.2lf\n", j+1, menuNames[j], menuPrices[j]);
-//                 found = 1;
-//             }
-//         }
-//         if(!found) printf("This category is currently unavailable.");
-//     }
-// }
 
 // Hàm phụ dùng để duyệt cây và in các món theo hạng mục yêu cầu
 void printByCategory(node* root, char category[], int* found) {
@@ -272,6 +250,7 @@ void printByCategory(node* root, char category[], int* found) {
     printByCategory(root->right, category, found);
 }
 
+// in ra menu
 void printMenu(node* root) 
 {
     if (root == NULL) {
@@ -680,20 +659,31 @@ void customer_mode(node*Menu, bill BILL, order dish, bill*head)
         int choice; choice = nhapsonguyen();
         if(choice  == 1 )
 		{
-            int code, number;
+            int code, number, found = 0;
             printf("Enter code of dish you want to change:"); code = nhapsonguyen();
             for(int j = 0; j < BILL->numberDish; j++)
 			{
                 if(BILL->list[j].code != code)
 				{
-                    printf("Do not found dish code in the bill!\n"); break;
+                    printf("Do not found dish code in the bill!\n");
+                    found = 1;
+                    break;
                 }
                 else
 				{
                 	printf("Enter the quantity you want to change:"); number = nhapsonguyen();
+                    if(number < 0){
+                        printf("Please enter again! "); break;
+                    }
+                    printf("Number of dish has been successfully changed!");
+                    break;
 				}
             }
+            if(found != 1)
+            {
             change_quantity(code, Menu, BILL, number);
+            }
+            else continue;
         }
         else if(choice == 2){break;}
         else{printf("Please enter again!");}
