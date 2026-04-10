@@ -663,25 +663,22 @@ void customer_mode(node*Menu, bill BILL, order dish, bill*head)
             printf("Enter code of dish you want to change:"); code = nhapsonguyen();
             for(int j = 0; j < BILL->numberDish; j++)
 			{
-                if(BILL->list[j].code != code)
+                if(BILL->list[j].code == code)
 				{
-                    printf("Do not found dish code in the bill!\n");
                     found = 1;
-                    break;
-                }
-                else
-				{
                 	printf("Enter the quantity you want to change:"); number = nhapsonguyen();
                     if(number < 0){
                         printf("Please enter again! "); break;
                     }
-                    printf("Number of dish has been successfully changed!");
-                    break;
+                    else{
+                        change_quantity(code, Menu, BILL, number);
+                        printf("Number of dish has been successfully changed!");
+                    } break;
 				}
             }
             if(found != 1)
             {
-            change_quantity(code, Menu, BILL, number);
+                printf("Do not found dish code in the bill!\n");
             }
             else continue;
         }
