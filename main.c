@@ -208,6 +208,7 @@ void add_food_menu(node**root)
     printf("Enter dish name: ");
     xoaBoNhoDem();
     scanf("%[^\n]", name);
+    xoaBoNhoDem();
     printf("Enter cost: ");
     while(scanf("%lf", &cost) != 1 || cost < 0)
 	{
@@ -496,7 +497,7 @@ void most_popular_dish(bill head, node* root)
     }
 
     int max = 0, index = -1;
-    for(int i = 1; i < 100; i++)
+    for(int i = 1; i < MAX_CODE; i++)
 	{
         if(count[i] > max)
 		{
