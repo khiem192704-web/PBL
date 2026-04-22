@@ -6,7 +6,8 @@
 #define MAX_MENU 20
 #define MAX_DISH 5
 #define MAX_CODE 1000
-
+#ifdef _WIN32
+#endif
 
 struct food{
     int code;
@@ -69,6 +70,14 @@ int nhapsonguyen()
     return n;
 }
 
+void clearScreen()
+{
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
+}
 // tạo root kiểu dữ liệu food
 node* createNode(food x)
 {
@@ -206,9 +215,7 @@ void add_food_menu(node**root)
         printf("Code %d already exists!\n", code); return;
     }
     printf("Enter dish name: ");
-    xoaBoNhoDem();
-    scanf("%[^\n]", name);
-    xoaBoNhoDem();
+    xoaBoNhoDem(); fgets(name, MAX_NAME, stdin); name[strcspn(name, "\n")] = 0;
     printf("Enter cost: ");
     while(scanf("%lf", &cost) != 1 || cost < 0)
 	{
@@ -713,6 +720,7 @@ void management_mode(node**Menu, bill*head)
     int option; option = nhapsonguyen();
     switch(option){
         case 1:{
+        	clearScreen();
             for(int i=0; i<40; i++) printf("=");
             printf("\n1. Add/remove food to menu.\n");
             printf("2. Update dish price\n");
@@ -721,6 +729,7 @@ void management_mode(node**Menu, bill*head)
             int select; select = nhapsonguyen();
             switch(select){
                 case 1:{
+                	clearScreen();
                     for(int i=0; i<40; i++) printf("=");
                     printf("\n1. Add food\n");
                     printf("2. Remove food\n");
@@ -730,6 +739,8 @@ void management_mode(node**Menu, bill*head)
                     switch(choice){
                         case 1: 
                         {
+                        	clearScreen();
+                        	printMenu(*Menu);
                             for(int i=0; i<40; i++) printf("=");
                             printf("\n");
 						    add_food_menu(Menu);
@@ -737,6 +748,8 @@ void management_mode(node**Menu, bill*head)
                         }
                         case 2:
                         {
+                        	clearScreen();
+                        	printMenu(*Menu);
                             for(int i=0; i<40; i++) printf("=");
                             printf("\nEnter dish code to remove: ");
                             int dish_code = nhapsonguyen();
@@ -753,6 +766,8 @@ void management_mode(node**Menu, bill*head)
                     break;
                 }
                 case 2: {
+                	clearScreen();
+                	printMenu(*Menu);
                     for(int i=0; i<40; i++) printf("=");
                 	printf("\nEnter dish code to update price: ");
                     int c = nhapsonguyen();
@@ -805,6 +820,7 @@ void operation(node*Menu, bill*head)
     SET_COLOR(10);
     printf("\nEnter transaction code:");
     codeDay = nhapsonguyen();
+    clearScreen();
     SET_COLOR(15);
     printMenu(Menu);
     while(1){
@@ -821,13 +837,14 @@ void operation(node*Menu, bill*head)
         printf("\n");
         switch(lc){
 		case 1:{
+			clearScreen();
             printMenu(Menu);
             bill BILL = create_bill();
             customer_mode(Menu, BILL, dish, head);
             break;
         }
 		case 2:{
-
+			clearScreen();
             management_mode(&Menu, head); break;
         }
         case 3:{
